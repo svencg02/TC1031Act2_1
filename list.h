@@ -1,17 +1,19 @@
 // =================================================================
 //
 // File: list.h
-// Author:
-// Date:
+// Author: Sven Chavez Garcia
+// Date: 
 // 
 // =================================================================
 #ifndef LIST_H
 #define LIST_H
 
 #include <string>
+
 #include <sstream>
 #include "exception.h"
 #include "header.h"
+#include <iostream>
 
 template <class T> class List;
 
@@ -58,7 +60,7 @@ class List {
 private:
 	Node<T> *head;
 	uint 	size;
-
+#pragma region a
 public:
 	List();
 	~List();
@@ -82,7 +84,9 @@ public:
 	T    remove_at(uint);
 
 	long int  indexOf(T) const;
+#pragma endregion a
 };
+
 
 // =================================================================
 // Constructor. Initializes both instance variables to zero.
@@ -222,11 +226,22 @@ T List<T>::last() const {
 // @throws IndexOutOfBounds, if index >= size.
 // =================================================================
 template <class T>
-T List<T>::get(uint index) const {
-	T aux;
+T List<T>::get(uint index) const { 
+	Node<T> *p; // creamos un apuntador de tipo nodo para obtener el valor
+	p = head; // lo igualamos a head para que sea el primer elemento en la lista [0]
 
-	// TO DO
-	return aux;
+	if(index == 0){ 
+		return head->value; // si el valor que estan buscando es el primero se devuelve el valor [0]
+	}
+
+	if ((index < 0) || (index >= size)) throw IndexOutOfBounds(); // en caso de que el index sea menor a 0 o mayor al tamaño se marca error
+
+	for (int i = 0; i < index; i++)
+	{
+		p = p->next; // recorremos la lista una vez para poder encontrar el valor del index O(n)
+	}
+
+	return p->value; //retornamos el valor 
 }
 
 // =================================================================
@@ -262,7 +277,7 @@ void List<T>::push_back(T val) {
 	}
 
 	q = new Node<T>(val);
-	q->next = p->next;
+	q->next = NULL;
 	p->next = q;
 	size++;
 }
@@ -275,7 +290,32 @@ void List<T>::push_back(T val) {
 // =================================================================
 template <class T>
 void List<T>::insert_at(T val, uint index) {
-	// TO DO
+	if (index < 0 || index > size){
+		throw IndexOutOfBounds(); // checamos que el index este dentro del rango
+	}
+
+	if(index == 0) {
+		push_front(val); // en caso de que lo quieran en la primera posicion se regresa el pushfront
+		return;
+	};
+	Node<T> *aux, *nuevo; //creamos un nodo auxiliar y el nuevo a insertar
+	int cont = 1; // inicializamos el contador en 1 
+	if (empty()) { 
+		push_front(val); // si la lista esta vacia aplicamos pushfront
+		return;
+	}
+	aux = head; //  igualamos el auxiliar al head
+	while (cont < index) 
+	{
+		aux = aux->next; // recorremos la lista hasta llega a la posicion desada O(n)
+		cont++; // aumentamos el contador 
+	};
+	nuevo = new Node<T>(val); // asignamos un nuevo nodo a la memoria dinamica
+	nuevo->next = aux->next; // igualamos los apuntadores para hacer el cambio
+	aux->next = nuevo; // y modificamos el apuntador anterior al nuevo nodo
+	size++; //aumentamos el tamnio 
+	return;
+	
 }
 
 // =================================================================
@@ -346,9 +386,31 @@ T List<T>::pop_back() {
 // =================================================================
 template <class T>
 T List<T>::remove_at(uint index) {
-	T aux;
-	// TO DO
-	return aux;
+	T val; // el valor a regresar
+	if (empty()){
+		throw NoSuchElement(); // si no hay nada en la lista regresar error
+	}
+	if (index < 0 || index > size){
+		throw IndexOutOfBounds(); // si hay algo fuera de rango mandar error 
+	}
+	if (index == 0){
+		return pop_front(); // si es el de hasta adelante entonces usar popfront
+	}
+	Node<T> *p, *q; //creamos un auxiliares para quitar un nodo
+	int cont = 0; //contador
+	p = head; // igualamos a head
+	q = NULL; // igualamos a null que va a recorrer la lista
+	while (cont < index)
+	{
+		q = p; // igualamos a p
+		p = p->next; // movemos p a la siguiente posicion
+		cont++; // aumentamos el contador O(n)
+	};
+	val = p->value; // el valor a regresar para saber cual quitamos 
+	q->next = p->next;// igualamos el apuntador q al p para eliminar el nodo de en medio 
+	delete p; // eliminamos el espacio en memoria 
+	size--; // reducimos el tamanio
+	return val; //regresamos el valor quitado 
 }
 
 // =================================================================
@@ -359,8 +421,23 @@ T List<T>::remove_at(uint index) {
 // =================================================================
 template <class T>
 long int List<T>::indexOf(T val) const {
-	// TO DO
-	return -1;
+	if (contains(val) == false){ 
+		return -1; // verificamos si el valor existe en la lista si no regresamos -1
+	}
+	int cont = 0;
+	Node<T> *p; // creamos un nodo para regresar el index
+	p = head; // igualamos al head de la lista
+
+	while (true)
+	{
+		if (p->value == val){
+			return cont; // si se encuentra el valor se detiene el contador y se regresa la posicio
+			break; // se rompe el ciclo 
+		}
+		p = p->next; // de lo contrario se recorre la lista O(n)
+		cont++; // se aumenta el contador
+	}
+
 }
 
 #endif /* LIST_H */
